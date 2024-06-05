@@ -1,4 +1,3 @@
-// index.js
 const express = require('express');
 const { ApolloServer } = require('apollo-server-express');
 const path = require('path');
@@ -8,7 +7,6 @@ const db = require('./database');
 
 const app = express();
 
-// Servir les fichiers statiques
 app.use(express.static(path.join(__dirname, 'public')));
 
 const server = new ApolloServer({ typeDefs, resolvers, context: { db } });
