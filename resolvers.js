@@ -5,6 +5,8 @@ module.exports = {
       posts: async (_, __, { db }) => await db.all('SELECT * FROM posts'),
       user: async (_, { id }, { db }) => await db.get('SELECT * FROM users WHERE id = ?', id),
       post: async (_, { id }, { db }) => await db.get('SELECT * FROM posts WHERE id = ?', id),
+      orders: async (_, __, { db }) => db.all('SELECT * FROM orders'),
+      order: async (_, { id }, { db }) => db.get('SELECT * FROM orders WHERE id = ?', id),
   },
   Mutation: {
     addUser: async (_, { name, email }, { db }) => {
@@ -33,11 +35,18 @@ module.exports = {
           await db.run('DELETE FROM posts WHERE id = ?', id);
           return post;
       },
+      addOrder: async (_, { userId, total }, { db }) => {
+        const { lastID } = await db.run('INSERT INTO orders (userId, total) VALUES (?, ?)', [userId, total]);
+        return db.get('SELECT * FROM orders WHERE id = ?', lastID);
+      },
   },
   User: {
       posts: async (user, _, { db }) => await db.all('SELECT * FROM posts WHERE userId = ?', user.id),
   },
   Post: {
       user: async (post, _, { db }) => await db.get('SELECT * FROM users WHERE id = ?', post.userId),
+  },
+  Order: {
+    user: async (order, _, { db }) => db.get('SELECT * FROM users WHERE id = ?', order.userId),
   }
 };
