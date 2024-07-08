@@ -1,60 +1,43 @@
 // resolvers.js
-const resolvers = {
-    Query: {
-      users: async (_, __, { db }) => {
-        return new Promise((resolve, reject) => {
-          db.all(`SELECT * FROM user`, [], (err, rows) => {
-            if (err) {
-              reject([]);
-            }
-            resolve(rows);
-          });
-        });
-      },
-      user: async (_, { id }, { db }) => {
-        return new Promise((resolve, reject) => {
-          db.get(`SELECT * FROM user WHERE id = ?`, [id], (err, row) => {
-            if (err) {
-              reject(null);
-            }
-            resolve(row);
-          });
-        });
-      }
-    },
-    Mutation: {
-      addUser: async (_, { name, email }, { db }) => {
-        return new Promise((resolve, reject) => {
-          db.run(`INSERT INTO user (name, email) VALUES (?, ?)`, [name, email], function (err) {
-            if (err) {
-              reject(null);
-            }
-            resolve({ id: this.lastID, name, email });
-          });
-        });
-      },
+module.exports = {
+  Query: {
+      users: async (_, __, { db }) => await db.all('SELECT * FROM users'),
+      posts: async (_, __, { db }) => await db.all('SELECT * FROM posts'),
+      user: async (_, { id }, { db }) => await db.get('SELECT * FROM users WHERE id = ?', id),
+      post: async (_, { id }, { db }) => await db.get('SELECT * FROM posts WHERE id = ?', id),
+  },
+  Mutation: {
+    addUser: async (_, { name, email }, { db }) => {
+      const { lastID } = await db.run('INSERT INTO users (name, email) VALUES (?, ?)', [name, email]);
+      return await db.get('SELECT * FROM users WHERE id = ?', lastID);
+  },
       updateUser: async (_, { id, name, email }, { db }) => {
-        return new Promise((resolve, reject) => {
-          db.run(`UPDATE user SET name = ?, email = ? WHERE id = ?`, [name, email, id], function (err) {
-            if (err) {
-              reject(null);
-            }
-            resolve({ id, name, email });
-          });
-        });
+          await db.run('UPDATE users SET name = ?, email = ? WHERE id = ?', [name, email, id]);
+          return await db.get('SELECT * FROM users WHERE id = ?', id);
       },
       deleteUser: async (_, { id }, { db }) => {
-        return new Promise((resolve, reject) => {
-          db.run(`DELETE FROM user WHERE id = ?`, [id], function (err) {
-            if (err) {
-              reject(null);
-            }
-            resolve({ id });
-          });
-        });
-      }
-    }
-  };
-  
-  module.exports = resolvers;
-  
+          const user = await db.get('SELECT * FROM users WHERE id = ?', id);
+          await db.run('DELETE FROM users WHERE id = ?', id);
+          return user;
+      },
+      addPost: async (_, { userId, title, content }, { db }) => {
+          const { lastID } = await db.run('INSERT INTO posts (userId, title, content) VALUES (?, ?, ?)', [userId, title, content]);
+          return await db.get('SELECT * FROM posts WHERE id = ?', lastID);
+      },
+      updatePost: async (_, { id, title, content }, { db }) => {
+          await db.run('UPDATE posts SET title = ?, content = ? WHERE id = ?', [title, content, id]);
+          return await db.get('SELECT * FROM posts WHERE id = ?', id);
+      },
+      deletePost: async (_, { id }, { db }) => {
+          const post = await db.get('SELECT * FROM posts WHERE id = ?', id);
+          await db.run('DELETE FROM posts WHERE id = ?', id);
+          return post;
+      },
+  },
+  User: {
+      posts: async (user, _, { db }) => await db.all('SELECT * FROM posts WHERE userId = ?', user.id),
+  },
+  Post: {
+      user: async (post, _, { db }) => await db.get('SELECT * FROM users WHERE id = ?', post.userId),
+  }
+};

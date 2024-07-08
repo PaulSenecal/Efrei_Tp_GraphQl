@@ -18,7 +18,7 @@
         <button type="submit">Add User</button>
     </form>
 
-    <h1>Update User (click on person to select person to update)</h1>
+    <h1>Update User</h1>
     <form id="updateForm">
         <label for="updateId">User ID:</label>
         <input type="text" id="updateId" name="updateId" required readonly>
@@ -30,6 +30,20 @@
         <input type="email" id="updateEmail" name="updateEmail" required>
         <br>
         <button type="submit">Update User</button>
+    </form>
+
+    <h1>Add a New Post</h1>
+    <form id="postForm">
+        <label for="postUserId">User ID:</label>
+        <input type="text" id="postUserId" name="postUserId" required>
+        <br>
+        <label for="postTitle">Title:</label>
+        <input type="text" id="postTitle" name="postTitle" required>
+        <br>
+        <label for="postContent">Content:</label>
+        <textarea id="postContent" name="postContent" required></textarea>
+        <br>
+        <button type="submit">Add Post</button>
     </form>
 
     <h1>User List</h1>

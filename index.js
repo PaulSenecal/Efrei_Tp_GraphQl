@@ -1,20 +1,34 @@
+// index.js
+
 const express = require('express');
 const { ApolloServer } = require('apollo-server-express');
-const path = require('path');
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
-const db = require('./database');
+const initializeDatabase = require('./database');
 
-const app = express();
+async function startApolloServer() {
+    const app = express();
 
-app.use(express.static(path.join(__dirname, 'public')));
+    const server = new ApolloServer({
+        typeDefs,
+        resolvers,
+        context: async () => ({
+            db: await initializeDatabase()
+        }),
+    });
 
-const server = new ApolloServer({ typeDefs, resolvers, context: { db } });
+    await server.start(); // Démarrer le serveur Apollo
+    console.log("serveur lancer");
 
-server.start().then(res => {
-  server.applyMiddleware({ app });
+    server.applyMiddleware({ app }); // Appliquer le middleware d'Apollo au serveur Express
 
-  app.listen({ port: 4000 }, () =>
-    console.log(`Server ready at http://localhost:4000${server.graphqlPath}`)
-  );
+    const PORT = process.env.PORT || 4000;
+    app.listen(PORT, () =>
+        console.log(`Server running at http://localhost:${PORT}${server.graphqlPath}`)
+    );
+}
+
+startApolloServer().catch(err => {
+    console.error('Failed to initialize server:', err);
+    process.exit(1);
 });
