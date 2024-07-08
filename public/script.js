@@ -4,7 +4,8 @@ document.getElementById('userForm').addEventListener('submit', async function(ev
 
     const name = document.getElementById('name').value;
     const email = document.getElementById('email').value;
-
+    console.log(document.getElementById('name').value);
+    console.log(document.getElementById('email').value);
     const query = `
         mutation {
             addUser(name: "${name}", email: "${email}") {
@@ -75,6 +76,48 @@ document.getElementById('updateForm').addEventListener('submit', async function(
     document.getElementById('updateId').readOnly = true;
 });
 
+document.getElementById('postForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const userId = document.getElementById('postUserId').value;
+    const title = document.getElementById('postTitle').value;
+    const content = document.getElementById('postContent').value;
+
+    const query = `
+        mutation {
+            addPost(userId: ${userId}, title: "${title}", content: "${content}") {
+                id
+                title
+                content
+                user {
+                    id
+                    name
+                }
+            }
+        }
+    `;
+
+    const response = await fetch('http://localhost:4000/graphql', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ query })
+    });
+
+    const result = await response.json();
+    console.log(result);
+
+    if (result.data && result.data.addPost) {
+        alert('Post added successfully!');
+        loadUsers();
+    } else {
+        alert('Error adding post.');
+    }
+
+    document.getElementById('postForm').reset();
+});
+
 async function loadUsers() {
     const query = `
         {
@@ -82,6 +125,11 @@ async function loadUsers() {
                 id
                 name
                 email
+                posts {
+                    id
+                    title
+                    content
+                }
             }
         }
     `;
@@ -101,7 +149,14 @@ async function loadUsers() {
     if (result.data && result.data.users) {
         result.data.users.forEach(user => {
             const li = document.createElement('li');
-            li.textContent = `${user.name} (${user.email})`;
+            li.innerHTML = `<strong>${user.name} (${user.email})</strong>`;
+            const userPosts = document.createElement('ul');
+            user.posts.forEach(post => {
+                const postLi = document.createElement('li');
+                postLi.textContent = `${post.title}: ${post.content}`;
+                userPosts.appendChild(postLi);
+            });
+            li.appendChild(userPosts);
             const updateButton = document.createElement('button');
             updateButton.textContent = 'Update';
             updateButton.addEventListener('click', () => populateUpdateForm(user));
