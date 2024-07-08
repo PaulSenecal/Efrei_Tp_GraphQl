@@ -118,6 +118,48 @@ document.getElementById('postForm').addEventListener('submit', async function(ev
     document.getElementById('postForm').reset();
 });
 
+document.getElementById('orderForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const userId = document.getElementById('orderUserId').value;
+    const title = document.getElementById('orderTitle').value;
+    const content = document.getElementById('orderContent').value;
+
+    const query = `
+        mutation {
+            addPost(userId: ${userId}, title: "${title}", content: "${content}") {
+                id
+                title
+                content
+                user {
+                    id
+                    name
+                }
+            }
+        }
+    `;
+
+    const response = await fetch('http://localhost:4000/graphql', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ query })
+    });
+
+    const result = await response.json();
+    console.log(result);
+
+    if (result.data && result.data.addPost) {
+        alert('order added successfully!');
+        loadUsers();
+    } else {
+        alert('Error adding post.');
+    }
+
+    document.getElementById('orderForm').reset();
+});
+
 async function loadUsers() {
     const query = `
         {

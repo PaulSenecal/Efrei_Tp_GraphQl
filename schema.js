@@ -16,11 +16,21 @@ const typeDefs = gql`
         user: User!
     }
 
+    type Order {
+    id: ID!
+    userId: ID!
+    total: Float!
+    createdAt: String!
+    user: User
+  }
+
     type Query {
         users: [User]
         posts: [Post]
         user(id: ID!): User
         post(id: ID!): Post
+        orders: [Order]
+        order(id: ID!): Order
     }
 
     type Mutation {
@@ -30,6 +40,7 @@ const typeDefs = gql`
         addPost(userId: ID!, title: String!, content: String!): Post
         updatePost(id: ID!, title: String!, content: String!): Post
         deletePost(id: ID!): Post
+        addOrder(userId: ID!, total: Float!): Order
     }
 `;
 
