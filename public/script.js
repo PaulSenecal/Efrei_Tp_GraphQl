@@ -1,4 +1,3 @@
-// script.js
 document.getElementById('userForm').addEventListener('submit', async function(event) {
     event.preventDefault();
 
